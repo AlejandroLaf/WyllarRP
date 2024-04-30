@@ -13,6 +13,10 @@ return new class extends Migration
     {
         Schema::create('habilidads', function (Blueprint $table) {
             $table->id();
+            $table->string('nombre');
+            $table->string('descripcion');
+            $table->string('accion');
+            $table->unsignedInteger('coste')->default(1);
             $table->timestamps();
         });
     }

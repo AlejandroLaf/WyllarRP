@@ -13,6 +13,9 @@ return new class extends Migration
     {
         Schema::create('hechizos', function (Blueprint $table) {
             $table->id();
+            $table->string('descripcion');
+            $table->string('accion');
+            $table->string('elemento');
             $table->timestamps();
         });
     }
