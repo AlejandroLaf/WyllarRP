@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::create('campañas', function (Blueprint $table) {
             $table->id();
+            $table->string('nombre');
+            $table->string('codigo')->unique();
             $table->timestamps();
         });
     }

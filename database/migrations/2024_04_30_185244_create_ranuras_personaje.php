@@ -14,6 +14,16 @@ return new class extends Migration
         Schema::create('ranuras_personaje', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
+            $table->unsignedInteger('ranuraMax1');
+            $table->unsignedInteger('ranuraMax2');
+            $table->unsignedInteger('ranuraMax3');
+            $table->unsignedInteger('ranuraMax4');
+            $table->unsignedInteger('ranuraMax5');
+            $table->unsignedInteger('ranuraActual1');
+            $table->unsignedInteger('ranuraActual2');
+            $table->unsignedInteger('ranuraActual3');
+            $table->unsignedInteger('ranuraActual4');
+            $table->unsignedInteger('ranuraActual5');
         });
     }
 
