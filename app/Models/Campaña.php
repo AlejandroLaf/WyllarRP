@@ -27,11 +27,16 @@ class Campaña extends Model
 
     public function jugadorEnCampaña($usuario_id)
     {
-        return $this->jugadores()->where('id', $usuario_id)->exists();
+        return $this->jugadores()->where('users.id', $usuario_id)->exists();
     }
 
     public function todosLosUsuarios()
     {
         return $this->creadores->merge($this->jugadores);
     }
+
+    public function chats()
+{
+    return $this->hasMany(Chat::class);
+}
 }

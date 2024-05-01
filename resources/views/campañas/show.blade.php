@@ -16,7 +16,6 @@
                             <div style="width: 25%; padding: 5px; box-sizing: border-box; text-align: center;">
                                 <img src="{{ $usuario->profile_photo_url }}" alt="Avatar de {{ $usuario->name }}"
                                     style="border-radius: 50%; width: 100px; height: 100px;">
-                                <p>{{ $usuario->name }}</p>
                             </div>
                         @endforeach
 
@@ -24,16 +23,38 @@
                             <div style="width: 25%; padding: 5px; box-sizing: border-box; text-align: center;">
                                 <img src="{{ $usuario->profile_photo_url }}" alt="Avatar de {{ $usuario->name }}"
                                     style="border-radius: 50%; width: 100px; height: 100px;">
-                                <p>{{ $usuario->name }}</p>
                             </div>
                         @endforeach
                     </div>
 
-
                 </div>
             </div>
 
+            <div class="w-full flex flex-row justify-around">
+            @foreach ($chatsGenerales as $chat)
+                <div class="w-1/4 mx-auto bg-purple-600 rounded-lg shadow-md p-4 my-4">
+                    <div class="flex flex-col items-center justify-center">
+                        <h2 class="text-2xl font-bold text-white mb-4">{{ $chat->nombre }}</h2>
+                        <a
+                        {{-- href="{{ route('chat.show', ['id' => $chat->id]) }}" --}}
+                            class="bg-green-500 text-white px-4 py-2 rounded-lg">Entrar</a>
+                    </div>
+                </div>
+            @endforeach
             </div>
+
+            <div class="w-full flex flex-row justify-around flex-wrap">
+            @foreach ($chatsJugadores as $chat)
+                <div class=" mx-auto bg-purple-600 rounded-lg shadow-md p-4 my-4" style="width:45%">
+                    <div class="flex flex-col items-center justify-center">
+                        <h2 class="text-2xl font-bold text-white mb-4">{{ $chat->nombre }}</h2>
+                        <a
+                        {{-- href="{{ route('chat.show', ['id' => $chat->id]) }}" --}}
+                            class="bg-green-500 text-white px-4 py-2 rounded-lg">Entrar</a>
+                    </div>
+                </div>
+            @endforeach
+        </div>
         @endsection
 
 

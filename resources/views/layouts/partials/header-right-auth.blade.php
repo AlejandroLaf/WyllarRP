@@ -30,11 +30,11 @@
         <x-slot name="content">
             <!-- Account Management -->
             <div class="block px-4 py-2 text-xs text-gray-400">
-                {{ __('menu.manage_account') }}
+                Manage account
             </div>
 
             <x-dropdown-link href="{{ route('profile.show') }}">
-                {{ __('menu.profile') }}
+                Profile
             </x-dropdown-link>
 
             <div class="border-t border-gray-200"></div>
@@ -44,7 +44,7 @@
                 @csrf
 
                 <x-dropdown-link href="{{ route('logout') }}" @click.prevent="$root.submit();">
-                    {{ __('menu.logout') }}
+                    Logout
                 </x-dropdown-link>
             </form>
         </x-slot>

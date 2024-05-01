@@ -16,4 +16,10 @@ class HomeController extends Controller
     {
         return view('home');
     }
+
+    protected function authenticated(Request $request)
+    {
+        // Lógica personalizada de redirección después de iniciar sesión
+        return redirect()->route('home');
+    }
 }

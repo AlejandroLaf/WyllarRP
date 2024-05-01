@@ -87,7 +87,13 @@
                 @endforeach
             </div>
         @else
-            <p>No se encontraron campañas para mostrar.</p>
+
+        <div class="w-full text-center flex justify-center flex-row">
+            <div
+                style="width: 40%; height: auto; background-color: #FF4444; border-radius: 10px; padding: 10px; color: #fff; margin-top: 10px; margin-bottom:100px">
+                <p>No se encontraron campañas para mostrar.</p>
+            </div>
+        </div>
         @endif
 
         {{ $campañas->links() }}

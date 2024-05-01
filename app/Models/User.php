@@ -58,4 +58,11 @@ class User extends Authenticatable
     protected $appends = [
         'profile_photo_url',
     ];
+
+    public function chats()
+{
+    return $this->belongsToMany(Chat::class, 'chat_usuario')
+                ->withPivot('hablar');
+
+}
 }
