@@ -29,4 +29,9 @@ class Campaña extends Model
     {
         return $this->jugadores()->where('id', $usuario_id)->exists();
     }
+
+    public function todosLosUsuarios()
+    {
+        return $this->creadores->merge($this->jugadores);
+    }
 }

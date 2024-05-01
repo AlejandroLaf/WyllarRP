@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Campaña;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -80,7 +81,13 @@ class CampañaController extends Controller
     public function show($id)
 {
     $campaña = Campaña::findOrFail($id);
-    return view('campañas.show', compact('campaña'));
+
+    $jugadores = User::whereIn('id', $campaña->jugadores()->pluck('user_id'))->get();
+
+    $creadores = User::whereIn('id', $campaña->creadores()->pluck('user_id'))->get();
+
+    return view('campañas.show', compact('campaña', 'creadores', 'jugadores'));
+
 }
 
 
