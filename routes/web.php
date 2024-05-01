@@ -19,7 +19,11 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', HomeController::class)->name('home');
 
 
-Route::get('/blog', [CampañaController::class, 'index'])->name('campaña.index');
+Route::get('/campaña', [CampañaController::class, 'index'])->name('campañas.index');
+Route::post('/campaña', [CampañaController::class, 'store'])->name('campañas.store');
+Route::post('/unirse-campaña', [CampañaController::class, 'unirse'])->name('campañas.unirse');
+Route::get('/campaña/{id}', [CampañaController::class, 'show'])->name('campaña.mostrar');
+
 
 Route::middleware([
     'auth:sanctum',

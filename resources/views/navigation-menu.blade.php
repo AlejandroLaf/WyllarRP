@@ -6,7 +6,7 @@
         <div class="top-menu ml-10">
             <div class="flex space-x-8 justify-between">
 
-                <x-nav-link href="{{ route('home') }}" :active="request()->routeIs('home')">
+                <x-nav-link href="{{ route('campañas.index') }}" :active="request()->routeIs('campañas.index')">
                     Campañas
                 </x-nav-link>
 
