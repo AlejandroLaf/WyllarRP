@@ -12,7 +12,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tabla_clase', function (Blueprint $table) {
+        Schema::create('tabla_clases', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
             $table->foreignIdFor(Clase::class)->index();
@@ -20,7 +20,7 @@ return new class extends Migration
             $table->unsignedInteger('stats');
             $table->unsignedInteger('ph');
             $table->unsignedInteger('exp');
-            $table->unsignedInteger('rasgos');
+            $table->string('rasgos');
         });
     }
 

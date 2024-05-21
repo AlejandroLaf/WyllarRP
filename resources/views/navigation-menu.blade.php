@@ -10,7 +10,7 @@
                     Campañas
                 </x-nav-link>
 
-                <x-nav-link href="{{ route('home') }}" :active="request()->routeIs('home')">
+                <x-nav-link href="{{ route('personajes.index') }}" :active="request()->routeIs('personajes.index')">
                     Personajes
                 </x-nav-link>
 
