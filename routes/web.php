@@ -33,6 +33,12 @@ Route::get('/personajes/create-step2', [PersonajesController::class, 'createStep
 Route::post('/personajes/store-step2', [PersonajesController::class, 'storeStep2'])->name('personajes.storeStep2');
 Route::get('/personajes/create-step3', [PersonajesController::class, 'createStep3'])->name('personajes.createStep3');
 Route::post('/personajes/store-step3', [PersonajesController::class, 'storeStep3'])->name('personajes.storeStep3');
+Route::get('/personajes/create-step4', [PersonajesController::class, 'createStep4'])->name('personajes.createStep4');
+Route::post('/personajes/store-step4', [PersonajesController::class, 'storeStep4'])->name('personajes.storeStep4');
+Route::get('/personajes/create-stepMagia', [PersonajesController::class, 'createStepMagia'])->name('personajes.createStepMagia');
+Route::post('/personajes/store-stepMagia', [PersonajesController::class, 'storeStepMagia'])->name('personajes.storeStepMagia');
+Route::get('/personajes/create-final', [PersonajesController::class, 'createFinal'])->name('personajes.createFinal');
+Route::post('/personajes/store-final', [PersonajesController::class, 'storeFinal'])->name('personajes.storeFinal');
 
 Route::middleware([
     'auth:sanctum',

@@ -27,10 +27,12 @@
                     <h2 class="text-xl font-bold">Estadísticas Calculadas</h2>
                     <p>VIT: <span id="VIT_value"></span></p>
                     <p>HP: <span id="HP_value"></span></p>
+                    <p>PH: {{$phNivel}} </p>
                     <p>Defensa: <span id="defensa_value"></span></p>
 
                     <input type="hidden" name="VIT" id="VIT">
                     <input type="hidden" name="HP" id="HP">
+                    <input type="hidden" name="PH" id="PH" value="{{$phNivel}}">
                     <input type="hidden" name="defensa" id="defensa">
                 </div>
 

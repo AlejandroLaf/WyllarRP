@@ -4,8 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Clase;
 use App\Models\Especializacion;
+use App\Models\Habilidad;
+use App\Models\Hechizo;
 use App\Models\Personaje;
+use App\Models\Rasgo;
 use App\Models\TablaClase;
+use App\Models\TablaMagiaClase;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -70,17 +74,22 @@ class PersonajesController extends Controller
         $predilecta = $personajeData['predilecta'];
         $clase = Clase::findOrFail($personajeData['clase_id']);
 
+
         // Calcular los puntos de estadísticas disponibles basados en el nivel
         $puntosTotales = TablaClase::where('clase_id', $clase->id)
             ->whereBetween('nivel', [1, $personajeData['nivel']])
             ->sum('stats');
+
+        $phNivel = TablaClase::where('clase_id', $clase->id)
+            ->where('nivel', $personajeData['nivel'])
+            ->value('PH');
 
         $especializaciones = null;
         if ($personajeData['nivel'] >= 3) {
             $especializaciones = Especializacion::where('clase_id', $clase->id)->get();
         }
 
-        return view('personajes.create-step2', compact('personajeData', 'stats', 'puntosTotales', 'especializaciones', 'clase'));
+        return view('personajes.create-step2', compact('personajeData', 'stats', 'puntosTotales', 'phNivel' ,'especializaciones', 'clase'));
     }
 
 
@@ -96,6 +105,7 @@ class PersonajesController extends Controller
         $especializacion_id = $request->input('especializacion_id');
         $VIT = $request->input('VIT');
         $HP = $request->input('HP');
+        $PH = $request->input('PH');
         $defensa = $request->input('defensa');
 
         // Establecer las estadísticas base con los valores del formulario
@@ -115,6 +125,7 @@ class PersonajesController extends Controller
             'stats' => $stats,
             'VIT' => $VIT,
             'HP' => $HP,
+            'PH' => $PH,
             'defensa' => $defensa,
             'user_id' => auth()->id(),
         ]);
@@ -170,22 +181,263 @@ class PersonajesController extends Controller
 
 
     public function storeStep3(Request $request)
-{
-    // Obtener los datos del personaje desde la sesión
-    $personajeData = session('personaje_data');
-    if (!$personajeData) {
-        return redirect()->route('personajes.createStep1');
+    {
+        // Obtener los datos del personaje desde la sesión
+        $personajeData = session('personaje_data');
+        if (!$personajeData) {
+            return redirect()->route('personajes.createStep1');
+        }
+
+        // Validar las habilidades seleccionadas
+        $habilidadesSeleccionadas = $request->input('habilidades_seleccionadas', []);
+
+        // Guardar las habilidades seleccionadas en los datos del personaje
+        $personajeData['habilidades'] = $habilidadesSeleccionadas;
+        session(['personaje_data' => $personajeData]);
+
+        // Redireccionar al siguiente paso
+        return redirect()->route('personajes.createStep4');
     }
 
-    // Validar las habilidades seleccionadas
-    $habilidadesSeleccionadas = $request->input('habilidades_seleccionadas', []);
+    public function createStep4(Request $request)
+    {
+        $personajeData = session('personaje_data');
+        if (!$personajeData) {
+            return redirect()->route('personajes.createStep1');
+        }
 
-    // Guardar las habilidades seleccionadas en los datos del personaje
-    $personajeData['habilidades'] = $habilidadesSeleccionadas;
-    session(['personaje_data' => $personajeData]);
+        $clase = Clase::findOrFail($personajeData['clase_id']);
+        $nivel = $personajeData['nivel'];
+        $tablaClase = TablaClase::where('clase_id', $clase->id)->where('nivel', '<=', $nivel)->pluck('rasgos')->toArray();
 
-    // Redireccionar al siguiente paso
-    return redirect()->route('personajes.createStep4');
-}
+        // Contar cuántas veces aparece "RB" en los rasgos
+        $rbCount = 0;
+        foreach ($tablaClase as $rasgos) {
+            $rbCount += substr_count($rasgos, 'RB');
+        }
 
+        $rasgosClase = $clase->rasgos;
+        $rasgosDisponibles = $rasgosClase;
+
+        $especializacion = null;
+        $rasgosEspecializacion = collect();
+        if (isset($personajeData['especializacion_id'])) {
+            $especializacion = Especializacion::findOrFail($personajeData['especializacion_id']);
+            $rasgosEspecializacion = $especializacion->rasgos()->where('nivel', '<=', $nivel)->get();
+            $rasgosDisponibles = $rasgosDisponibles->merge($rasgosEspecializacion);
+        }
+
+        return view('personajes.create-step4', compact('personajeData', 'rbCount', 'rasgosDisponibles', 'rasgosClase', 'especializacion', 'rasgosEspecializacion'));
+    }
+
+    public function storeStep4(Request $request)
+    {
+        $personajeData = session('personaje_data');
+        if (!$personajeData) {
+            return redirect()->route('personajes.createStep1');
+        }
+
+        $rasgosSeleccionados = $request->input('rasgos_seleccionados', []);
+
+        // Añadir los rasgos seleccionados al personaje
+        $personajeData['rasgos'] = $rasgosSeleccionados;
+        session(['personaje_data' => $personajeData]);
+
+        // Comprobar si la clase tiene magia
+        $clase = Clase::findOrFail($personajeData['clase_id']);
+        $nivel = $personajeData['nivel'];
+        $magiaClase = TablaMagiaClase::where('clase_id', $clase->id)->where('nivel', '<=', $nivel)->first();
+
+        if ($magiaClase) {
+            // Redirigir al paso de selección de magia si la clase tiene magia
+            return redirect()->route('personajes.createStepMagia');
+        } else {
+            // Redirigir al paso final si la clase no tiene magia
+            return redirect()->route('personajes.createStepFinal');
+        }
+    }
+
+    public function createStepMagia(Request $request)
+    {
+        $personajeData = session('personaje_data');
+        if (!$personajeData) {
+            return redirect()->route('personajes.createStep1');
+        }
+
+        $clase = Clase::findOrFail($personajeData['clase_id']);
+        $nivel = $personajeData['nivel'];
+        $magiaClase = TablaMagiaClase::where('clase_id', $clase->id)->where('nivel', $nivel)->first();
+
+        $hechizos1 = [];
+        $hechizos2 = [];
+        $hechizos3 = [];
+        $hechizos4 = [];
+        $hechizos5 = [];
+
+        // Obtener los hechizos de la clase para cada nivel
+        foreach (range(1, 5) as $nivelHechizo) {
+            $hechizosClaseNivel = Hechizo::join('hechizos_clase', 'hechizos.id', '=', 'hechizos_clase.hechizo_id')
+                ->where('hechizos_clase.clase_id', $clase->id)
+                ->where('hechizos_clase.nivel', $nivelHechizo)
+                ->get(['hechizos.*', 'hechizos_clase.nivel as nivel_hechizo']);
+
+            foreach ($hechizosClaseNivel as $hechizo) {
+                ${"hechizos" . $nivelHechizo}[] = $hechizo;
+            }
+        }
+
+        // Obtener los hechizos de la especialización si existe
+        if (isset($personajeData['especializacion_id'])) {
+            $especializacion = Especializacion::findOrFail($personajeData['especializacion_id']);
+
+            foreach (range(1, 5) as $nivelHechizo) {
+                $hechizosEspecializacionNivel = Hechizo::join('hechizos_especializacion', 'hechizos.id', '=', 'hechizos_especializacion.hechizo_id')
+                    ->where('hechizos_especializacion.especializacion_id', $especializacion->id)
+                    ->where('hechizos_especializacion.nivel', $nivelHechizo)
+                    ->get(['hechizos.*', 'hechizos_especializacion.nivel as nivel_hechizo']);
+
+                foreach ($hechizosEspecializacionNivel as $hechizo) {
+                    ${"hechizos" . $nivelHechizo}[] = $hechizo;
+                }
+            }
+        }
+
+        return view('personajes.create-step-magia', compact('personajeData', 'magiaClase', 'hechizos1', 'hechizos2', 'hechizos3', 'hechizos4', 'hechizos5'));
+    }
+
+
+    public function storeStepMagia(Request $request)
+    {
+        // Recuperar los datos del personaje desde la sesión
+        $personajeData = session('personaje_data');
+        if (!$personajeData) {
+            return redirect()->route('personajes.createStep1');
+        }
+
+        // Guardar las ranuras de magia en la sesión
+        $personajeData['ranuras_magia'] = [
+            'nivel_1' => $request->ranuras1,
+            'nivel_2' => $request->ranuras2,
+            'nivel_3' => $request->ranuras3,
+            'nivel_4' => $request->ranuras4,
+            'nivel_5' => $request->ranuras5,
+        ];
+
+        // Guardar los hechizos seleccionados en la sesión
+        $personajeData['hechizos_seleccionados1'] = $request->hechizos_seleccionados1 ?? [];
+        $personajeData['hechizos_seleccionados2'] = $request->hechizos_seleccionados2 ?? [];
+        $personajeData['hechizos_seleccionados3'] = $request->hechizos_seleccionados3 ?? [];
+        $personajeData['hechizos_seleccionados4'] = $request->hechizos_seleccionados4 ?? [];
+        $personajeData['hechizos_seleccionados5'] = $request->hechizos_seleccionados5 ?? [];
+
+        // Actualizar la sesión con los nuevos datos
+        session(['personaje_data' => $personajeData]);
+
+        // Redirigir a la vista final del personaje
+        return redirect()->route('personajes.createFinal');
+    }
+
+    public function createFinal()
+    {
+        $personajeData = session('personaje_data');
+        if (!$personajeData) {
+            return redirect()->route('personajes.createStep1');
+        }
+
+        // Recuperar las entidades relacionadas
+        $clase = Clase::find($personajeData['clase_id']);
+        $especializacion = isset($personajeData['especializacion_id']) ? Especializacion::find($personajeData['especializacion_id']) : null;
+
+        // Recuperar los detalles de las estadísticas
+        $stats = $personajeData['stats'];
+
+        $habilidades = Habilidad::whereIn('id', $personajeData['habilidades'])->get();
+        $rasgos = Rasgo::whereIn('id', $personajeData['rasgos'])->get();
+        $hechizosSeleccionados1 = Hechizo::whereIn('id', $personajeData['hechizos_seleccionados1'] ?? [])->get();
+        $hechizosSeleccionados2 = Hechizo::whereIn('id', $personajeData['hechizos_seleccionados2'] ?? [])->get();
+        $hechizosSeleccionados3 = Hechizo::whereIn('id', $personajeData['hechizos_seleccionados3'] ?? [])->get();
+        $hechizosSeleccionados4 = Hechizo::whereIn('id', $personajeData['hechizos_seleccionados4'] ?? [])->get();
+        $hechizosSeleccionados5 = Hechizo::whereIn('id', $personajeData['hechizos_seleccionados5'] ?? [])->get();
+
+
+        return view('personajes.final', compact('personajeData', 'clase', 'especializacion', 'stats', 'habilidades', 'rasgos', 'hechizosSeleccionados1', 'hechizosSeleccionados2', 'hechizosSeleccionados3', 'hechizosSeleccionados4', 'hechizosSeleccionados5'));
+    }
+
+    public function storeFinal(Request $request)
+    {
+        $personajeData = session('personaje_data');
+        if (!$personajeData) {
+            return redirect()->route('personajes.createStep1');
+        }
+
+        // Crear el personaje
+        $personaje = Personaje::create([
+            'nombre' => $personajeData['nombre'],
+            'FUE' => $personajeData['stats']['FUE'],
+            'DES' => $personajeData['stats']['DES'],
+            'CON' => $personajeData['stats']['CON'],
+            'PER' => $personajeData['stats']['PER'],
+            'SAB' => $personajeData['stats']['SAB'],
+            'CAR' => $personajeData['stats']['CAR'],
+            'VOL' => $personajeData['stats']['VOL'],
+            'VIT' => $personajeData['VIT'],
+            'PH' => $personajeData['PH'],
+            'nivel' => $personajeData['nivel'],
+            'defensa' => $personajeData['defensa'],
+            // Otras columnas necesarias
+            'user_id' => auth()->id(), // Opcional: Asignar el ID del usuario autenticado
+            'clase_id' => $personajeData['clase_id'],
+            'especializacion_id' => isset($personajeData['especializacion_id']) ? $personajeData['especializacion_id'] : null,
+        ]);
+
+        // Guardar las ranuras de magia
+        $ranuras = [
+            'ranuraMax1' => $personajeData['ranuras_magia']['nivel_1'],
+            'ranuraMax2' => $personajeData['ranuras_magia']['nivel_2'],
+            'ranuraMax3' => $personajeData['ranuras_magia']['nivel_3'],
+            'ranuraMax4' => $personajeData['ranuras_magia']['nivel_4'],
+            'ranuraMax5' => $personajeData['ranuras_magia']['nivel_5'],
+            'ranuraActual1' => $personajeData['ranuras_magia']['nivel_1'],
+            'ranuraActual2' => $personajeData['ranuras_magia']['nivel_2'],
+            'ranuraActual3' => $personajeData['ranuras_magia']['nivel_3'],
+            'ranuraActual4' => $personajeData['ranuras_magia']['nivel_4'],
+            'ranuraActual5' => $personajeData['ranuras_magia']['nivel_5'],
+        ];
+
+        $personaje->ranurasPersonaje()->create($ranuras);
+
+        // Guardar las habilidades
+        if (isset($personajeData['habilidades'])) {
+            $personaje->habilidades()->attach($personajeData['habilidades']);
+        }
+
+        // Guardar los rasgos
+        if (isset($personajeData['rasgos'])) {
+            $personaje->rasgos()->attach($personajeData['rasgos']);
+        }
+
+        for ($i = 1; $i <= 5; $i++) {
+            $nivelHechizosSeleccionados = 'hechizos_seleccionados' . $i;
+
+            // Verifica si existe la variable para el nivel actual
+            if (isset($personajeData[$nivelHechizosSeleccionados])) {
+                // Obtiene los IDs de los hechizos seleccionados para este nivel
+                $hechizosSeleccionados = $personajeData[$nivelHechizosSeleccionados];
+
+                // Itera sobre cada hechizo seleccionado y los guarda en el personaje
+                foreach ($hechizosSeleccionados as $hechizoId) {
+                    $hechizo = Hechizo::find($hechizoId);
+                    if ($hechizo) {
+                        $personaje->hechizos()->attach($hechizoId, ['nivel' => $i]);
+                    }
+                }
+            }
+        }
+
+        // Limpiar la sesión
+        session()->forget('personaje_data');
+
+        // Redirigir al paso final del personaje
+        return redirect()->route('personajes.createFinal')->with('success', 'Personaje creado con éxito.');
+    }
 }

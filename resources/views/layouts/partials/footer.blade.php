@@ -1,4 +1,4 @@
-<footer class="text-sm flex items-center border-t border-gray-100 flex-wrap justify-between px-4 py-4 " style="background-color: #22CC7C">
+<footer class="text-sm flex items-center border-t border-gray-100 flex-wrap justify-between px-4 py-4" style="background-color: #22CC7C">
 
     <div class="flex space-x-4" >
         <a class="text-white hover:text-orange-500" href="">Home</a>

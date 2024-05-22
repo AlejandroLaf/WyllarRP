@@ -29,4 +29,24 @@ class Personaje extends Model
     {
         return $this->belongsTo(Especializacion::class);
     }
+
+    public function ranurasPersonaje()
+    {
+        return $this->hasOne(RanurasPersonaje::class,'ranuras_personaje');
+    }
+
+    public function habilidades()
+    {
+        return $this->belongsToMany(Habilidad::class, 'habilidades_personaje');
+    }
+
+    public function rasgos()
+    {
+        return $this->belongsToMany(Rasgo::class, 'rasgos_personaje');
+    }
+
+    public function hechizos()
+    {
+        return $this->belongsToMany(Hechizo::class,'hechizos_personaje')->withPivot('nivel');
+    }
 }

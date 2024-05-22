@@ -24,5 +24,15 @@ class Especializacion extends Model
         return $this->belongsToMany(Habilidad::class, 'habilidades_especializacion');
     }
 
+    public function rasgos()
+    {
+        return $this->belongsToMany(Rasgo::class, 'rasgos_especializacion')->withPivot('nivel');
+    }
+
+    public function hechizos()
+    {
+        return $this->hasMany(Hechizo::class, 'hechizos_especializacion');
+    }
+
 
 }

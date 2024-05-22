@@ -19,4 +19,9 @@ public function especializaciones()
     return $this->belongsToMany(Clase::class, 'habilidades_especializacion');
 }
 
+public function personajes()
+{
+    return $this->belongsToMany(Personaje::class, 'habilidades_personaje');
+}
+
 }
