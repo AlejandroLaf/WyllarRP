@@ -31,9 +31,9 @@ class Personaje extends Model
     }
 
     public function ranurasPersonaje()
-    {
-        return $this->hasOne(RanurasPersonaje::class,'ranuras_personaje');
-    }
+{
+    return $this->hasOne(RanurasPersonaje::class, 'personaje_id');
+}
 
     public function habilidades()
     {

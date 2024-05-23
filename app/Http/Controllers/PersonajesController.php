@@ -18,9 +18,58 @@ class PersonajesController extends Controller
 {
     public function index()
     {
-
-        return view('personajes.index');
+        if (Auth::check()) {
+            $user = Auth::user();
+            $personajes = Personaje::where('user_id', $user->id)->paginate(6);
+            return view('personajes.index', compact('personajes'));
+        } else {
+            $personajes = Personaje::paginate(0);
+            return view('personajes.index', compact('personajes'));
+        }
     }
+
+    public function show($id)
+{
+    $personaje = Personaje::findOrFail($id);
+
+    $rasgos = $personaje->rasgos;
+
+    $habilidades = $personaje->habilidades;
+
+    $ranuras = $personaje->ranurasPersonaje;
+
+    $hechizos = $personaje->hechizos;
+    $hechizosPorNivel = [
+        'nivel1' => [],
+        'nivel2' => [],
+        'nivel3' => [],
+        'nivel4' => [],
+        'nivel5' => []
+    ];
+
+    foreach ($hechizos as $hechizo) {
+        switch ($hechizo->pivot->nivel) {
+            case 1:
+                $hechizosPorNivel['nivel1'][] = $hechizo;
+                break;
+            case 2:
+                $hechizosPorNivel['nivel2'][] = $hechizo;
+                break;
+            case 3:
+                $hechizosPorNivel['nivel3'][] = $hechizo;
+                break;
+            case 4:
+                $hechizosPorNivel['nivel4'][] = $hechizo;
+                break;
+            case 5:
+                $hechizosPorNivel['nivel5'][] = $hechizo;
+                break;
+        }
+    }
+
+    return view('personajes.show', compact('personaje', 'rasgos', 'habilidades', 'ranuras', 'hechizosPorNivel'));
+}
+
 
     public function createStep1()
     {
@@ -89,7 +138,7 @@ class PersonajesController extends Controller
             $especializaciones = Especializacion::where('clase_id', $clase->id)->get();
         }
 
-        return view('personajes.create-step2', compact('personajeData', 'stats', 'puntosTotales', 'phNivel' ,'especializaciones', 'clase'));
+        return view('personajes.create-step2', compact('personajeData', 'stats', 'puntosTotales', 'phNivel', 'especializaciones', 'clase'));
     }
 
 
@@ -314,14 +363,16 @@ class PersonajesController extends Controller
             return redirect()->route('personajes.createStep1');
         }
 
+        $clase = Clase::findOrFail($personajeData['clase_id']);
+        $nivel = $personajeData['nivel'];
+        $magiaClase = TablaMagiaClase::where('clase_id', $clase->id)->where('nivel', $nivel)->first();
+
         // Guardar las ranuras de magia en la sesión
-        $personajeData['ranuras_magia'] = [
-            'nivel_1' => $request->ranuras1,
-            'nivel_2' => $request->ranuras2,
-            'nivel_3' => $request->ranuras3,
-            'nivel_4' => $request->ranuras4,
-            'nivel_5' => $request->ranuras5,
-        ];
+        $personajeData['ranuras_magia1'] = $magiaClase->ranuras1;
+        $personajeData['ranuras_magia2'] = $magiaClase->ranuras2;
+        $personajeData['ranuras_magia3'] = $magiaClase->ranuras3;
+        $personajeData['ranuras_magia4'] = $magiaClase->ranuras4;
+        $personajeData['ranuras_magia5'] = $magiaClase->ranuras5;
 
         // Guardar los hechizos seleccionados en la sesión
         $personajeData['hechizos_seleccionados1'] = $request->hechizos_seleccionados1 ?? [];
@@ -382,6 +433,7 @@ class PersonajesController extends Controller
             'VOL' => $personajeData['stats']['VOL'],
             'VIT' => $personajeData['VIT'],
             'PH' => $personajeData['PH'],
+            'HP' => $personajeData['HP'],
             'nivel' => $personajeData['nivel'],
             'defensa' => $personajeData['defensa'],
             // Otras columnas necesarias
@@ -392,16 +444,16 @@ class PersonajesController extends Controller
 
         // Guardar las ranuras de magia
         $ranuras = [
-            'ranuraMax1' => $personajeData['ranuras_magia']['nivel_1'],
-            'ranuraMax2' => $personajeData['ranuras_magia']['nivel_2'],
-            'ranuraMax3' => $personajeData['ranuras_magia']['nivel_3'],
-            'ranuraMax4' => $personajeData['ranuras_magia']['nivel_4'],
-            'ranuraMax5' => $personajeData['ranuras_magia']['nivel_5'],
-            'ranuraActual1' => $personajeData['ranuras_magia']['nivel_1'],
-            'ranuraActual2' => $personajeData['ranuras_magia']['nivel_2'],
-            'ranuraActual3' => $personajeData['ranuras_magia']['nivel_3'],
-            'ranuraActual4' => $personajeData['ranuras_magia']['nivel_4'],
-            'ranuraActual5' => $personajeData['ranuras_magia']['nivel_5'],
+            'ranuraMax1' => $personajeData['ranuras_magia1'],
+            'ranuraMax2' => $personajeData['ranuras_magia2'],
+            'ranuraMax3' => $personajeData['ranuras_magia3'],
+            'ranuraMax4' => $personajeData['ranuras_magia4'],
+            'ranuraMax5' => $personajeData['ranuras_magia5'],
+            'ranuraActual1' => $personajeData['ranuras_magia1'],
+            'ranuraActual2' => $personajeData['ranuras_magia2'],
+            'ranuraActual3' => $personajeData['ranuras_magia3'],
+            'ranuraActual4' => $personajeData['ranuras_magia4'],
+            'ranuraActual5' => $personajeData['ranuras_magia5'],
         ];
 
         $personaje->ranurasPersonaje()->create($ranuras);
@@ -438,6 +490,6 @@ class PersonajesController extends Controller
         session()->forget('personaje_data');
 
         // Redirigir al paso final del personaje
-        return redirect()->route('personajes.createFinal')->with('success', 'Personaje creado con éxito.');
+        return redirect()->route('personajes.index')->with('success', 'Personaje creado con éxito.');
     }
 }

@@ -27,6 +27,8 @@ Route::post('/unirse-campaña', [CampañaController::class, 'unirse'])->name('ca
 Route::get('/campaña/{id}', [CampañaController::class, 'show'])->name('campaña.mostrar');
 
 Route::get('/personajes', [PersonajesController::class, 'index'])->name('personajes.index');
+
+
 Route::get('/personajes/create-step1', [PersonajesController::class, 'createStep1'])->name('personajes.create');
 Route::post('/personajes/storeStep1', [PersonajesController::class, 'storeStep1'])->name('personajes.storeStep1');
 Route::get('/personajes/create-step2', [PersonajesController::class, 'createStep2'])->name('personajes.createStep2');
@@ -39,6 +41,8 @@ Route::get('/personajes/create-stepMagia', [PersonajesController::class, 'create
 Route::post('/personajes/store-stepMagia', [PersonajesController::class, 'storeStepMagia'])->name('personajes.storeStepMagia');
 Route::get('/personajes/create-final', [PersonajesController::class, 'createFinal'])->name('personajes.createFinal');
 Route::post('/personajes/store-final', [PersonajesController::class, 'storeFinal'])->name('personajes.storeFinal');
+
+Route::get('/personajes/{id}', [PersonajesController::class, 'show'])->name('personajes.show');
 
 Route::middleware([
     'auth:sanctum',

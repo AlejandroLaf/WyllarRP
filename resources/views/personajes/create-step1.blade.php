@@ -1,4 +1,4 @@
-<!-- resources/views/personajes/create-step1.blade.php -->
+
 <x-app-layout title="Crear Personaje - Paso 1">
     @section('hero')
         <div class="w-full text-center py-32 flex justify-center flex-col items-center">

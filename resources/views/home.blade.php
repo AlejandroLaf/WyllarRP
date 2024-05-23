@@ -24,7 +24,7 @@
                     <h1 class="text-2xl md:text-3xl font-bold text-center lg:text-5xl mt-8 text-white" style="margin-top: 120px">
                         EMPIEZA TU AVENTURA
                     </h1>
-                    <a class="px-3 py-2 text-lg text-white rounded mt-8 inline-block" style="background-color: #22CC7C" href="{{ route('home') }}">
+                    <a class="px-3 py-2 text-lg text-white rounded mt-8 inline-block" style="background-color: #22CC7C" href="{{ route('campañas.index') }}">
                         Campañas
                     </a>
                 </div>
@@ -35,7 +35,7 @@
                     <h1 class="text-2xl md:text-3xl font-bold text-center lg:text-5xl mt-8 text-white" style="margin-top: 120px">
                         CREA TU PERSONAJE
                     </h1>
-                    <a class="px-3 py-2 text-lg text-white rounded mt-8 inline-block" style="background-color: #22CC7C;" href="">
+                    <a class="px-3 py-2 text-lg text-white rounded mt-8 inline-block" style="background-color: #22CC7C;" href="{{ route('personajes.index') }}">
                         Personajes
                     </a>
                 </div>

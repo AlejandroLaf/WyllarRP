@@ -81,7 +81,6 @@
                                 href="{{ route('campaña.mostrar', ['id' => $campaña->id]) }}">
                                 entrar
                             </a>
-                            <!-- Aquí puedes mostrar más detalles de la campaña si es necesario -->
                         </div>
                     </div>
                 @endforeach
